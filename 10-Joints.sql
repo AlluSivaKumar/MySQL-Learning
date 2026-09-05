@@ -1,0 +1,362 @@
+USE company;
+
+CREATE TABLE department (
+    department_id INT PRIMARY KEY,
+    department_name VARCHAR(50) NOT NULL,
+    location VARCHAR(50)
+);
+
+CREATE TABLE employee (
+    employee_id INT PRIMARY KEY,
+    employee_name VARCHAR(50) NOT NULL,
+    salary DECIMAL(10,2),
+    department_id INT,
+    manager_id INT
+);
+
+TRUNCATE table DEPARTMENT;
+
+INSERT INTO department VALUES
+(1, 'IT', 'Hyderabad'),
+(2, 'HR', 'Chennai'),
+(3, 'Sales', 'Bengaluru'),
+(4, 'Finance', 'Mumbai');
+
+TRUNCATE TABLE EMPLOYEE;
+
+INSERT INTO employee VALUES
+(101, 'Siva',   65000, 1, NULL),
+(102, 'Rakesh', 45000, 2, 101),
+(103, 'Murali', 55000, 3, 101),
+(104, 'Divya',  75000, 1, 103),
+(105, 'Ravi',   40000, NULL, 103);
+
+
+CREATE TABLE PROJECT (
+    PROJECT_ID INT PRIMARY KEY AUTO_INCREMENT,
+    PROJECT_NAME VARCHAR(100) NOT NULL,
+    EMPLOYEE_ID INT,
+
+    CONSTRAINT FK_PROJECT_EMPLOYEE
+    FOREIGN KEY (EMPLOYEE_ID)
+    REFERENCES EMPLOYEE(EMPLOYEE_ID)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+);
+
+INSERT INTO PROJECT (PROJECT_NAME, EMPLOYEE_ID)
+VALUES
+    ('Railway Reservation System', 101),
+    ('Employee Management System', 102),
+    ('Sales Dashboard', 103),
+    ('Weather Forecasting Website', 101);
+
+SELECT 
+	E.EMPLOYEE_ID,
+    E.EMPLOYEE_NAME,
+    D.DEPARTMENT_NAME,
+    D.LOCATION
+FROM EMPLOYEE E INNER JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID;
+
+SELECT *
+FROM EMPLOYEE E LEFT JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+WHERE E.DEPARTMENT_ID IS NOT NULL;
+
+SELECT
+	E.EMPLOYEE_NAME,
+    D.DEPARTMENT_NAME
+FROM EMPLOYEE E RIGHT JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+WHERE E.EMPLOYEE_NAME IS NOT NULL;
+
+
+-- FULL OUTER JOIN WITHOUT DUPLICATES
+SELECT * 
+FROM EMPLOYEE E LEFT JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+UNION 
+SELECT * 
+FROM EMPLOYEE E RIGHT JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID;
+
+-- FULL OUTER JOIN WITH DUPLICATES
+SELECT * 
+FROM EMPLOYEE E LEFT JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+UNION ALL
+SELECT * 
+FROM EMPLOYEE E RIGHT JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID;
+
+SELECT E.EMPLOYEE_NAME , D.DEPARTMENT_NAME
+FROM EMPLOYEE E CROSS JOIN DEPARTMENT D ;
+
+SELECT 
+	E.EMPLOYEE_NAME AS EMPLOYEE,
+    M.EMPLOYEE_NAME AS MANAGER
+FROM EMPLOYEE E INNER JOIN EMPLOYEE M
+ON E.MANAGER_ID = M.EMPLOYEE_ID;
+
+SELECT E.EMPLOYEE_NAME,
+	   D.DEPARTMENT_NAME,
+       P.PROJECT_NAME
+FROM EMPLOYEE E INNER JOIN DEPARTMENT D
+	 ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+INNER JOIN PROJECT P
+	 ON E.EMPLOYEE_ID = P.EMPLOYEE_ID;
+
+SELECT * FROM EMPLOYEE;
+SELECT * FROM DEPARTMENT;
+SELECT * FROM PROJECT;
+
+-- Drop child tables before parent tables
+DROP TABLE IF EXISTS PROJECT;
+DROP TABLE IF EXISTS EMPLOYEE;
+DROP TABLE IF EXISTS DEPARTMENT;
+
+-- =============================================
+-- 1. CREATE DEPARTMENT TABLE
+-- =============================================
+
+CREATE TABLE DEPARTMENT (
+    DEPARTMENT_ID INT PRIMARY KEY,
+    DEPARTMENT_NAME VARCHAR(50) NOT NULL UNIQUE,
+    LOCATION VARCHAR(50) NOT NULL
+);
+
+-- =============================================
+-- 2. CREATE EMPLOYEE TABLE
+-- =============================================
+
+CREATE TABLE EMPLOYEE (
+    EMPLOYEE_ID INT PRIMARY KEY,
+    EMPLOYEE_NAME VARCHAR(50) NOT NULL,
+    SALARY DECIMAL(10,2) NOT NULL,
+    DEPARTMENT_ID INT,
+    MANAGER_ID INT,
+
+    CONSTRAINT FK_EMPLOYEE_DEPARTMENT
+    FOREIGN KEY (DEPARTMENT_ID)
+    REFERENCES DEPARTMENT(DEPARTMENT_ID)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+    CONSTRAINT FK_EMPLOYEE_MANAGER
+    FOREIGN KEY (MANAGER_ID)
+    REFERENCES EMPLOYEE(EMPLOYEE_ID)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+);
+
+-- =============================================
+-- 3. CREATE PROJECT TABLE
+-- =============================================
+
+CREATE TABLE PROJECT (
+    PROJECT_ID INT PRIMARY KEY AUTO_INCREMENT,
+    PROJECT_NAME VARCHAR(100) NOT NULL,
+    EMPLOYEE_ID INT,
+
+    CONSTRAINT FK_PROJECT_EMPLOYEE
+    FOREIGN KEY (EMPLOYEE_ID)
+    REFERENCES EMPLOYEE(EMPLOYEE_ID)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+);
+
+-- =============================================
+-- 4. INSERT 5 DEPARTMENTS
+-- =============================================
+
+INSERT INTO DEPARTMENT
+    (DEPARTMENT_ID, DEPARTMENT_NAME, LOCATION)
+VALUES
+    (1, 'IT',        'Hyderabad'),
+    (2, 'HR',        'Chennai'),
+    (3, 'Sales',     'Bengaluru'),
+    (4, 'Finance',   'Mumbai'),
+    (5, 'Marketing', 'Pune');
+    
+-- =============================================
+-- 5. INSERT 5 EMPLOYEES
+-- =============================================
+
+INSERT INTO EMPLOYEE
+    (EMPLOYEE_ID, EMPLOYEE_NAME, SALARY, DEPARTMENT_ID, MANAGER_ID)
+VALUES
+    (101, 'Siva',   65000.00, 1, NULL),
+    (102, 'Rakesh', 45000.00, 2, 101),
+    (103, 'Murali', 55000.00, 3, 101),
+    (104, 'Divya',  75000.00, 1, 103),
+    (105, 'Ravi',   40000.00, NULL, 103);
+    
+-- =============================================
+-- 6. INSERT 5 PROJECTS
+-- =============================================
+
+INSERT INTO PROJECT
+    (PROJECT_NAME, EMPLOYEE_ID)
+VALUES
+    ('Railway Reservation System', 101),
+    ('Weather Forecasting Website', 101),
+    ('Employee Management System', 102),
+    ('Sales Analytics Dashboard', 103),
+    ('Banking Application', 104);
+    
+-- =============================================
+-- 7. VERIFY THE DATA
+-- =============================================
+
+SELECT * FROM DEPARTMENT;
+
+SELECT * FROM EMPLOYEE;
+
+SELECT * FROM PROJECT;
+
+-- Question 1 — INNER JOIN
+-- Display the following details of employees who belong to a department:
+-- Employee ID , Employee name , Salary , Department name , Department location
+SELECT 
+E.EMPLOYEE_ID , E.EMPLOYEE_NAME , E.SALARY , D.DEPARTMENT_NAME , D.LOCATION
+FROM EMPLOYEE E INNER JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID;
+
+-- Question 2 — LEFT JOIN
+-- Display all employees with their department names, including employees who do not belong to any department.
+SELECT 
+E.EMPLOYEE_NAME , D.DEPARTMENT_NAME 
+FROM EMPLOYEE E LEFT JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID;
+
+-- Question 3 — LEFT JOIN with NULL
+-- Find only the employees who do not belong to any department.
+SELECT E.EMPLOYEE_NAME , D.DEPARTMENT_NAME
+FROM EMPLOYEE E LEFT JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+WHERE D.DEPARTMENT_NAME IS NULL;
+
+
+-- Question 4 — RIGHT JOIN
+-- Display all departments with their employee names, including departments that do not have any employees.
+SELECT E.EMPLOYEE_NAME , D.DEPARTMENT_NAME
+FROM EMPLOYEE E RIGHT JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID;
+
+-- Question 5 — Find unmatched departments
+-- Find only the departments that do not have any employees.
+SELECT D.DEPARTMENT_NAME
+FROM EMPLOYEE E RIGHT JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+WHERE E.EMPLOYEE_ID IS NULL;
+
+-- Question 6 — SELF JOIN
+-- Display every employee along with their manager’s name.
+-- Include employees who do not have a manager.
+-- Expected columns: Employee	Manager
+SELECT 
+E.EMPLOYEE_NAME EMPLOYEE, 
+M.EMPLOYEE_NAME AS MANAGER
+FROM EMPLOYEE E LEFT JOIN EMPLOYEE M
+ON E.MANAGER_ID = M.EMPLOYEE_ID;
+
+-- Question 7 — Employees in the same department
+-- Find pairs of employees who work in the same department.
+-- Requirements:
+-- Do not match an employee with themselves.
+-- Do not display the same pair twice.
+-- Expected pair: Siva and Divya.
+SELECT 
+E1.EMPLOYEE_NAME AS EMPLOYEE1,
+E2.EMPLOYEE_NAME AS EMPLOYEE2,
+D.DEPARTMENT_ID
+FROM EMPLOYEE E1 
+INNER JOIN 
+EMPLOYEE E2
+ON E1.DEPARTMENT_ID = E2.DEPARTMENT_ID
+AND E1.EMPLOYEE_ID < E2.EMPLOYEE_ID
+INNER JOIN DEPARTMENT D
+ON E1.DEPARTMENT_ID = D.DEPARTMENT_ID;
+
+-- Question 8 — JOIN with GROUP BY
+-- Count the number of employees in every department.
+-- Include departments that have zero employees.
+-- Expected columns:
+-- Department	Total Employees
+SELECT D.DEPARTMENT_NAME ,
+COUNT(E.EMPLOYEE_ID) AS EMPLOYEE_COUNT
+FROM EMPLOYEE E RIGHT JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+GROUP BY D.DEPARTMENT_ID;
+
+SELECT
+    D.DEPARTMENT_NAME,
+    COUNT(E.EMPLOYEE_ID) AS EMPLOYEE_COUNT
+FROM EMPLOYEE E
+RIGHT JOIN DEPARTMENT D
+    ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+GROUP BY
+    D.DEPARTMENT_ID,
+    D.DEPARTMENT_NAME;
+
+-- Question 9 — Highest-paid employee
+-- Display the highest-paid employee in each department.
+-- Expected columns:
+-- Department	Employee	Salary
+-- Do not include departments without employees.
+SELECT 
+	D.DEPARTMENT_NAME AS DEPARTMENT,
+    E.EMPLOYEE_NAME AS EMPLOYEE,
+    E.SALARY AS SALARY
+FROM EMPLOYEE E INNER JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+INNER JOIN
+(SELECT 
+DEPARTMENT_ID , MAX(SALARY) AS MAX_SALARY
+FROM EMPLOYEE
+WHERE DEPARTMENT_ID IS NOT NULL
+GROUP BY DEPARTMENT_ID
+) H 
+ON E.DEPARTMENT_ID = H.DEPARTMENT_ID
+AND E.SALARY = H.MAX_SALARY;
+
+
+-- Question 10 — FULL OUTER JOIN
+-- MySQL does not directly support FULL OUTER JOIN.
+-- Simulate it to display:
+-- All matched employee-department records
+-- Employees without departments
+-- Departments without employees
+-- Try both methods:
+-- LEFT JOIN + UNION + RIGHT JOIN
+-- LEFT JOIN + UNION ALL + filtered RIGHT JOIN
+
+SELECT 
+E.EMPLOYEE_NAME AS EMPLOYEE ,
+D.DEPARTMENT_NAME AS DEPARTMENT
+FROM EMPLOYEE E LEFT JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+UNION 
+SELECT
+E.EMPLOYEE_NAME AS EMPLOYEE ,
+D.DEPARTMENT_NAME AS DEPARTMENT
+FROM EMPLOYEE E RIGHT JOIN DEPARTMENT D
+ON E.DEPARTMENT_ID = D.DEPARTMENT_ID;
+
+
+SELECT
+    E.EMPLOYEE_NAME AS EMPLOYEE,
+    D.DEPARTMENT_NAME AS DEPARTMENT
+FROM EMPLOYEE E
+LEFT JOIN DEPARTMENT D
+    ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+UNION ALL
+SELECT
+    E.EMPLOYEE_NAME AS EMPLOYEE,
+    D.DEPARTMENT_NAME AS DEPARTMENT
+FROM EMPLOYEE E
+RIGHT JOIN DEPARTMENT D
+    ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+WHERE E.EMPLOYEE_ID IS NULL;
+
